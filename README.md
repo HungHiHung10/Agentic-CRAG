@@ -25,17 +25,23 @@ The system can **self-check retrieved context** and **fallback to query rewrite 
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [System Pipeline](#system-pipeline)
-- [Models & Tools](#models--tools)
-- [Installation](#installation)
-- [Data Setup](#data-setup)
-- [Run on Colab](#run-on-colab)
-- [Run Locally](#run-locally)
-- [Evaluation](#evaluation)
-- [Outputs](#outputs)
-- [Troubleshooting](#troubleshooting)
-- [Acknowledgements](#acknowledgements)
+- [Agentic Corrective RAG System with LangGraph](#agentic-corrective-rag-system-with-langgraph)
+  - [Open in Colab (Quickstart)](#open-in-colab-quickstart)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [System Pipeline](#system-pipeline)
+  - [Models \& Tools](#models--tools)
+  - [Installation](#installation)
+    - [Option A — Colab (Recommended)](#option-a--colab-recommended)
+    - [Option B — Local (Jupyter / Python)](#option-b--local-jupyter--python)
+  - [Data Setup](#data-setup)
+    - [Example (as used in the notebooks)](#example-as-used-in-the-notebooks)
+  - [Run on Colab](#run-on-colab)
+  - [Run Locally](#run-locally)
+  - [Evaluation](#evaluation)
+  - [Outputs](#outputs)
+  - [Troubleshooting](#troubleshooting)
+  - [Acknowledgements](#acknowledgements)
 
 ---
 
@@ -55,11 +61,11 @@ The goal is to reduce hallucinations and improve answer grounding.
 ## System Pipeline
 
 ```mermaid
-flowchart TD
+graph TD
   Q[User Query] --> R[Retrieve from Vector DB]
   R --> G[Grade Retrieved Chunks]
-  G -->|Sufficient| A[Generate Answer]
-  G -->|Insufficient| W[Rewrite Query]
+  G -- Sufficient --> A[Generate Answer]
+  G -- Insufficient --> W[Rewrite Query]
   W --> S[Web Search]
   S --> R2[Retrieve/Build Context]
   R2 --> A
