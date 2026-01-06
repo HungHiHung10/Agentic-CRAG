@@ -1,0 +1,27 @@
+# --- Core Frameworks ---
+langchain
+langchain-community
+langchain-core
+langchain-huggingface
+langchain-chroma
+langgraph
+ddgs
+duckduckgo-search
+
+# --- AI Models & Transformers ---
+transformers>=4.38.0
+sentence-transformers
+accelerate
+torch
+
+# --- Vector Database ---
+chromadb
+
+# --- Tools & Utilities ---
+duckduckgo-search>=5.0
+docx2txt
+pandas
+numpy
+openpyxl
+tqdm
+pydantic
