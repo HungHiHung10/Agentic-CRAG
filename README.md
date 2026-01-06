@@ -1,138 +1,203 @@
 # Agentic Corrective RAG System with LangGraph
 
+An **Agentic Corrective Retrieval-Augmented Generation (CRAG)** pipeline built with **LangGraph** for domain QA over Vietnamese documents (e.g., YHCT).  
+The system can **self-check retrieved context** and **fallback to query rewrite + web search** when local evidence is insufficient.
 
-## Table of Contents
-- [Installation](#installation)
-- [Data Setup](#data-setup)
-- [Model and Tool Initialization](#model-and-tool-initialization)
-- [Running the CRAG System](#running-the-crag-system)
-- [System Evaluation](#system-evaluation)
+---
+
+## Open in Colab (Quickstart)
+
+> Open a notebook and run **Runtime → Run all**.
 
 <p align="left">
-  <strong>Quickstart here </strong> 
   <a href="https://colab.research.google.com/drive/1-Hh52dIAnHE3QWzUYlKtvuf7IR0zksHY?usp=sharing">
-    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab - Notebook A"/>
+  </a>
+  <a href="https://colab.research.google.com/drive/1wVzP8nj3-0neq_pLkIkpEs_Od8Tu-3xC?usp=sharing">
+    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab - Notebook B"/>
+  </a>
+  <a href="https://colab.research.google.com/drive/1piGvJVQpZPkwQPVOrHqhCsKCS3QybEkX?usp=sharing">
+    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab - Notebook C"/>
   </a>
 </p>
 
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [System Pipeline](#system-pipeline)
+- [Models & Tools](#models--tools)
+- [Installation](#installation)
+- [Data Setup](#data-setup)
+- [Run on Colab](#run-on-colab)
+- [Run Locally](#run-locally)
+- [Evaluation](#evaluation)
+- [Outputs](#outputs)
+- [Troubleshooting](#troubleshooting)
+- [Acknowledgements](#acknowledgements)
+
+---
+
+## Overview
+
+This project implements an **agentic CRAG** workflow:
+
+- Retrieve relevant chunks from a **local vector database**
+- Grade retrieved evidence
+- If evidence is good → answer
+- If evidence is weak → rewrite query and/or use **web search** → answer
+
+The goal is to reduce hallucinations and improve answer grounding.
+
+---
+
+## System Pipeline
+
+```mermaid
+flowchart TD
+  Q[User Query] --> R[Retrieve from Vector DB]
+  R --> G[Grade Retrieved Chunks]
+  G -->|Sufficient| A[Generate Answer]
+  G -->|Insufficient| W[Rewrite Query]
+  W --> S[Web Search]
+  S --> R2[Retrieve/Build Context]
+  R2 --> A
+```
+
+---
+
+## Models & Tools
+
+The default notebooks use:
+
+- **Embedding model:** `BAAI/bge-m3`
+- **Reranker:** `BAAI/bge-reranker-base`
+- **LLM (generation / judge):** `Qwen/Qwen2.5-7B-Instruct`
+- **Vector store:** ChromaDB
+- **Web search:** DuckDuckGo (via `duckduckgo-search` / `ddgs`)
+
+> You can swap models by editing the corresponding cells/config inside the notebook.
+
+---
+
 ## Installation
 
-To run this notebook, install the following Python libraries in your Google Colab environment:
+### Option A — Colab (Recommended)
+No local setup needed. Use one of the Colab notebooks above.
 
-```python
-%capture
-!pip install -U langchain langchain-community langchain-core langgraph langchain-openai langchain-huggingface langchain-chroma chromadb sentence-transformers duckduckgo-search ddgs
+### Option B — Local (Jupyter / Python)
+Install dependencies (minimum set used in notebooks):
+
+```bash
+pip install -U \
+  langchain langchain-community langchain-core langgraph \
+  langchain-openai langchain-huggingface \
+  langchain-chroma chromadb \
+  sentence-transformers \
+  duckduckgo-search ddgs \
+  docx2txt pandas openpyxl
 ```
 
-```python
-%capture
-!pip install langchain-huggingface sentence-transformers langchain-community docx2txt gdown
-```
+> If your environment differs, follow the install cell in the notebook as the source of truth.
+
+---
 
 ## Data Setup
-The system uses Vietnamese Traditional Medicine (YHCT) data stored as `.docx` files on Google Drive.
 
-1.  **Mount Google Drive:**
+The notebooks expect:
 
-    ```python
-    from google.colab import drive
-    drive.mount('/content/drive')
-    ```
+1. **Knowledge documents**: typically `.docx` files (domain corpus)
+2. **Evaluation set**: a `.json` file containing questions and ground-truth answers
 
-2.  **Data Files**: Ensure the following `.docx` files are available:
-    -   `2010. Noi Khoa YHCT - GS Hoang Bao Chau. NXB Thoi Dai.docx`
-    -   `bệnh ngũ quan.docx`
-    -   `nhi-khoa-y-hoc-co-truyen.docx`
-    -   `noi-khoa-y-hoc-co-truyen.docx`
+### Example (as used in the notebooks)
+- Domain docs (`.docx`): internal medicine / pediatrics / ENT (YHCT) documents
+- Evaluation JSON: a QA file (e.g., “bệnh ngũ quan.json”)
 
-3.  **HuggingFace Embedding Models Initialization**:
+**On Colab**
+- Mount Google Drive:
+  - `from google.colab import drive`
+  - `drive.mount('/content/drive')`
+- Update file paths to your Drive location.
 
-    ```python
-    from langchain_community.embeddings import HuggingFaceEmbeddings
-    import torch
+**On Local**
+- Put files under a folder like `data/`
+- Update paths in the notebook cells accordingly.
 
-    model_name = "BAAI/bge-m3"
-    print(f"[PROCESS] Loading Embedding model: {model_name}...")
+---
 
-    embedding_model = HuggingFaceEmbeddings(
-        model_name=model_name,
-        model_kwargs={'device': 'cuda'},
-        encode_kwargs={'normalize_embeddings': True}
-    )
+## Run on Colab
 
-    print("[SUCCESS] Loaded Embedding Model into GPU!")
-    ```
+1. Open a notebook (badge above)
+2. **Mount Google Drive** (if using Drive files)
+3. Run the notebook top-to-bottom:
+   - Install libs
+   - Load + chunk documents
+   - Build/load the Chroma vector DB
+   - Run a demo query
+   - (Optional) Run evaluation
 
-4.  **Document Chunking**: Run the provided cells to load and split documents into chunks:
-    -   Cell for `2010. Noi Khoa YHCT - GS Hoang Bao Chau. NXB Thoi Dai.docx`
-    -   Cell for `bệnh ngũ quan.docx`
-    -   Cell for `nhi-khoa-y-hoc-co-truyen.docx`
-    -   Cell for `noi-khoa-y-hoc-co-truyen.docx`
+---
 
-5.  **Vector Database Creation**: After chunking the documents, a ChromaDB vector database is created and persisted on disk for efficient context retrieval.  
-The cell below under **Create a Vector DB and persist on disk** embeds all chunks and stores the vector index for reuse across runs.
+## Run Locally
 
-6.  **Retriever Configuration**: A Similarity with Threshold Retriever is configured to retrieve relevant documents from the vector database.
+1. Install dependencies (see [Installation](#installation))
+2. Open the notebook with Jupyter / VSCode:
+   - Run all cells sequentially
+3. Ensure:
+   - Document paths are correct
+   - Chroma persistence directory is writable (if enabled)
+   - Optional: run on GPU for faster inference
 
-    ```python
-    similarity_threshold_retriever = chroma_db.as_retriever(search_type="similarity_score_threshold",
-                                                            search_kwargs={"k": 3,
-                                                                           "score_threshold": 0.3})
-    ```
+---
 
-## Model and Tool Initialization
+## Evaluation
 
-1. **Load the Large Language Model (LLM)**:  
-   The **Qwen2.5-7B-Instruct** model is loaded to perform text generation, document grading, and query rewriting tasks.
+The evaluation section compares (as implemented in the notebooks):
 
+1. **Agentic CRAG** (with rewrite + web search fallback)
+2. **CRAG without web search** (local retrieval + grading only)
+3. **Naive RAG** baseline
 
-2. **Initialize LLM Chains**:  
-   Initialize the LLM chains (**Grader**, **Rewriter**, **Generator**) to handle different stages of the CRAG system.
-   - **Grader**: Evaluates the relevance of retrieved documents.
-   - **Rewriter**: Rewrites user queries to improve retrieval quality. 
-   - **Generator**: Generates answers based on the given context and question.
+A judge LLM scores each answer with criteria such as:
+- **Faithfulness** (groundedness vs. context)
+- **Relevance**
+- **Correctness** (vs. ground truth)
 
-3. **Load Web Search Tool**:
-   Use `DuckDuckGoSearchResults` to retrieve information from the web when local context is insufficient.
+> Web-search is inherently non-deterministic; results can vary over time.
 
-## Running the CRAG System
+---
 
-1. **Define Graph State**:  
-   Define the `GraphState` structure to track the internal state of the agent
+## Outputs
 
-2. **Define Graph Nodes**:  
-   The functions `retrieve`, `grade_documents`, `rewrite_query`, `web_search`, `generate_answer`, and `decide_to_generate` are defined as nodes in the graph.
+After evaluation, results are saved as Excel files:
 
-3. **Build the Agent Graph**:  
-   The graph is constructed using `langgraph` to orchestrate the agent’s workflow.
+- `agentic_crag_results.xlsx`
+- `crag_result.xlsx`
+- `naive_rag_results.xlsx`
 
-4. **Execute the Agent**:  
-   Run the agent with a sample query.
+Each file typically includes per-question scores (and may include generated answers depending on the notebook version).
 
-    ```python
-    query = "How is liver cirrhosis treated in Vietnamese Traditional Medicine?"
+---
 
-    inputs = {
-        "question": query,
-        "documents": [],
-        "generation": ""
-    }
+## Troubleshooting
 
-    response = agentic_rag.invoke(inputs)
-    display(Markdown(response['generation']))
-    ```
+- **Slow / OOM**
+  - Use a GPU runtime (Colab GPU recommended)
+  - Reduce generation max tokens / batch size
+- **Poor retrieval**
+  - Tune chunk size / overlap
+  - Increase top-k and tighten grading thresholds
+  - Switch embedding model
+- **Web search noise**
+  - Trigger web search only when grading is low
+  - Log retrieved sources and adjust filtering rules
 
-## System Evaluation
+---
 
-The system's performance is evaluated using metrics like Faithfulness, Relevance, and Correctness against a set of predefined questions and ground truth answers. The evaluation process involves:
+## Acknowledgements
 
-1.  **Preparing Judge Model**: An LLM (`Qwen/Qwen2.5-7B-Instruct`) is initialized to act as an evaluator based on specific prompts for faithfulness, relevance, and correctness.
-
-2.  **Loading Evaluation Data:** A JSON file (`bệnh ngũ quan.json`) containing questions and ground truths is loaded.
-
-3.  **Running Evaluation:**
-    *   **Agentic CRAG System**: The agentic CRAG system processes each question, and its answer is then judged by the LLM (`Qwen/Qwen2.5-7B-Instruct`) based on the defined metrics.
-    *   **CRAG (without web search)**: An evaluation for a simplified CRAG system is performed.
-    *   **Naive RAG**: A baseline Naive RAG system is also evaluated for comparison.
-
-4.  **Results:** The evaluation scores for each system are compiled into DataFrames and saved to Excel files (`agentic_crag_results.xlsx`, `crag_result.xlsx`, `naive_rag_results.xlsx`).
+- LangGraph / LangChain ecosystem
+- BAAI embedding + reranker models
+- Qwen open-source LLM family
+- DuckDuckGo search tooling
