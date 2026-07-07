@@ -71,13 +71,39 @@ The goal is to reduce hallucinations and improve answer grounding.
 
 ```mermaid
 graph TD
-  Q[User Query] --> R[Retrieve from Vector DB]
-  R --> G[Grade Retrieved Chunks]
-  G -- Sufficient --> A[Generate Answer]
-  G -- Insufficient --> W[Rewrite Query]
-  W --> S[Web Search]
-  S --> R2[Retrieve/Build Context]
-  R2 --> A
+    %% Nodes
+    Start([User Input])
+    Retrieve[retrieve: Local Vector DB]
+    Grade[grade_documents: Hybrid Grader]
+    Decide{decide_to_generate}
+    Rewrite[rewrite_query: LLM Optimizer]
+    Search[web_search: DuckDuckGo API]
+    Generate[generate_answer: LLM Generator]
+    End([Final Output])
+
+    %% Edges
+    Start --> Retrieve
+    Retrieve --> Grade
+    
+    %% Internal logic description
+    Grade -.->|Filters chunks via Parallel LLM Batch + N-gram Lexical| Decide
+
+    Decide -->|web_search = 'No'| Generate
+    Decide -->|web_search = 'Yes'| Rewrite
+    
+    Rewrite --> Search
+    Search -->|Appends Web Results to Context| Generate
+    
+    Generate --> End
+    
+    %% Styling
+    classDef startend fill:#14b8a6,stroke:#0f766e,stroke-width:2px,color:#fff,font-weight:bold;
+    classDef process fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,color:#1e293b;
+    classDef condition fill:#fef08a,stroke:#eab308,stroke-width:2px,color:#854d0e;
+    
+    class Start,End startend;
+    class Retrieve,Grade,Rewrite,Search,Generate process;
+    class Decide condition;
 ```
 
 ---
