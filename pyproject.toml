@@ -1,0 +1,13 @@
+[project]
+name = "agentic-crag"
+version = "0.1.0"
+description = "Agentic Corrective RAG system for Vietnamese traditional medicine QA."
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = ["modules*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

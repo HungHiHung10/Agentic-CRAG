@@ -6,17 +6,17 @@ import os
 from tqdm import tqdm
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from config import FILES
+from modules.settings import FILES
 
 # ==============================================================================
 # 1. DEFINE JUDGE CHAINS
 # ==============================================================================
 def build_eval_chains(judge_llm):
     """
-    Khởi tạo các Chain dùng để chấm điểm: Faithfulness, Relevance, Correctness.
+    KhÃ¡Â»Å¸i tÃ¡ÂºÂ¡o cÃƒÂ¡c Chain dÃƒÂ¹ng Ã„â€˜Ã¡Â»Æ’ chÃ¡ÂºÂ¥m Ã„â€˜iÃ¡Â»Æ’m: Faithfulness, Relevance, Correctness.
     """
     
-    # --- PROMPT 1: Faithfulness (Trung thực với ngữ cảnh) ---
+    # --- PROMPT 1: Faithfulness (Trung thÃ¡Â»Â±c vÃ¡Â»â€ºi ngÃ¡Â»Â¯ cÃ¡ÂºÂ£nh) ---
     faithfulness_prompt = ChatPromptTemplate.from_template("""
     You are an evaluator for a RAG system.
     Task: Compare the AI ANSWER with the PROVIDED CONTEXT.
@@ -36,7 +36,7 @@ def build_eval_chains(judge_llm):
     Reason: [Concise explanation]
     """)
 
-    # --- PROMPT 2: Relevance (Đúng trọng tâm câu hỏi) ---
+    # --- PROMPT 2: Relevance (Ã„ÂÃƒÂºng trÃ¡Â»Âng tÃƒÂ¢m cÃƒÂ¢u hÃ¡Â»Âi) ---
     relevance_prompt = ChatPromptTemplate.from_template("""
     You are an evaluator for a RAG system.
     Task: Compare the AI ANSWER with the USER QUESTION.
@@ -53,7 +53,7 @@ def build_eval_chains(judge_llm):
     Reason: [Concise explanation]
     """)
 
-    # --- PROMPT 3: Correctness (Chính xác so với đáp án chuẩn) ---
+    # --- PROMPT 3: Correctness (ChÃƒÂ­nh xÃƒÂ¡c so vÃ¡Â»â€ºi Ã„â€˜ÃƒÂ¡p ÃƒÂ¡n chuÃ¡ÂºÂ©n) ---
     correctness_prompt = ChatPromptTemplate.from_template("""
     You are an examiner grading a Traditional Medicine exam.
     Compare the AI ANSWER with the GROUND TRUTH.
@@ -89,14 +89,14 @@ def build_eval_chains(judge_llm):
 # ==============================================================================
 def extract_score(text):
     """
-    Trích xuất điểm số từ chuỗi kết quả của LLM (VD: 'Score: 4' -> 4)
+    TrÃƒÂ­ch xuÃ¡ÂºÂ¥t Ã„â€˜iÃ¡Â»Æ’m sÃ¡Â»â€˜ tÃ¡Â»Â« chuÃ¡Â»â€”i kÃ¡ÂºÂ¿t quÃ¡ÂºÂ£ cÃ¡Â»Â§a LLM (VD: 'Score: 4' -> 4)
     """
     match = re.search(r'Score\s*:\s*(\d+)', text, re.IGNORECASE)
     return int(match.group(1)) if match else 0
 
 def load_eval_data(file_path):
     """
-    Load dữ liệu đánh giá từ file JSON.
+    Load dÃ¡Â»Â¯ liÃ¡Â»â€¡u Ã„â€˜ÃƒÂ¡nh giÃƒÂ¡ tÃ¡Â»Â« file JSON.
     """
     if not os.path.exists(file_path):
         print(f"[ERROR] Evaluation file not found: {file_path}")
@@ -116,12 +116,12 @@ def load_eval_data(file_path):
 # ==============================================================================
 def run_evaluation(app_graph, eval_chains, output_file="eval_results.xlsx"):
     """
-    Chạy hệ thống RAG trên tập dữ liệu test và chấm điểm.
+    ChÃ¡ÂºÂ¡y hÃ¡Â»â€¡ thÃ¡Â»â€˜ng RAG trÃƒÂªn tÃ¡ÂºÂ­p dÃ¡Â»Â¯ liÃ¡Â»â€¡u test vÃƒÂ  chÃ¡ÂºÂ¥m Ã„â€˜iÃ¡Â»Æ’m.
     
     Args:
-        app_graph: LangGraph app đã compile.
-        eval_chains: Dict chứa các chains chấm điểm (từ build_eval_chains).
-        output_file: Tên file Excel đầu ra.
+        app_graph: LangGraph app Ã„â€˜ÃƒÂ£ compile.
+        eval_chains: Dict chÃ¡Â»Â©a cÃƒÂ¡c chains chÃ¡ÂºÂ¥m Ã„â€˜iÃ¡Â»Æ’m (tÃ¡Â»Â« build_eval_chains).
+        output_file: TÃƒÂªn file Excel Ã„â€˜Ã¡ÂºÂ§u ra.
     """
     eval_data_path = FILES["eval_json"]
     eval_data = load_eval_data(eval_data_path)

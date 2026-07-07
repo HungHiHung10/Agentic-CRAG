@@ -1,36 +1,13 @@
-# main.py
-from config import SIMILARITY_THRESHOLD, RETRIEVAL_K
-from utils import load_embedding_model, load_llm_model
-from modules.ingestion import create_vector_db
-from modules.components import build_grader_chain, build_rewriter_chain, build_generator_chain
-from modules.graph import CRAGWorkflow
+from modules.rag.service import build_crag_workflow
+
 
 def main():
-    # 1. Load Models
-    embed_model = load_embedding_model()
-    llm = load_llm_model()
-    
-    # 2. Setup Vector DB
-    db = create_vector_db(embed_model, force_rebuild=False)
-    retriever = db.as_retriever(search_type="similarity_score_threshold", 
-                                search_kwargs={"k": RETRIEVAL_K, "score_threshold": SIMILARITY_THRESHOLD})
-    
-    # 3. Setup Chains
-    grader = build_grader_chain(llm)
-    rewriter = build_rewriter_chain(llm)
-    generator = build_generator_chain(llm)
-    
-    # 4. Build Graph
-    crag_system = CRAGWorkflow(retriever, grader, rewriter, generator)
-    app = crag_system.build()
-    
-    # 5. Run Inference
-    query = "Triệu chứng và cách điều trị bệnh Trúng thử?"
+    graph = build_crag_workflow()
+    query = "Tri\u1ec7u ch\u1ee9ng v\u00e0 c\u00e1ch \u0111i\u1ec1u tr\u1ecb b\u1ec7nh Tr\u00fang th\u1eed?"
     print(f"\nQuestion: {query}")
-    inputs = {"question": query, "documents": [], "generation": ""}
-    
-    result = app.invoke(inputs)
+    result = graph.invoke({"question": query, "documents": [], "generation": ""})
     print(f"\nAnswer:\n{result['generation']}")
+
 
 if __name__ == "__main__":
     main()

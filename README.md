@@ -16,7 +16,7 @@ The system can **self-check retrieved context** and **fallback to query rewrite 
 
 ## Open in Colab (Quickstart)
 
-> Open a notebook and run **Runtime → Run all**.
+> Open a notebook and run **Runtime ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Run all**.
 
 <p align="left">
   <a href="https://colab.research.google.com/drive/1-Hh52dIAnHE3QWzUYlKtvuf7IR0zksHY?usp=sharing">
@@ -41,8 +41,8 @@ The system can **self-check retrieved context** and **fallback to query rewrite 
   - [System Pipeline](#system-pipeline)
   - [Models \& Tools](#models--tools)
   - [Installation](#installation)
-    - [Option A — Colab (Recommended)](#option-a--colab-recommended)
-    - [Option B — Local (Jupyter / Python)](#option-b--local-jupyter--python)
+    - [Option A ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Colab (Recommended)](#option-a--colab-recommended)
+    - [Option B ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Local (Jupyter / Python)](#option-b--local-jupyter--python)
   - [Data Setup](#data-setup)
     - [Example (as used in the notebooks)](#example-as-used-in-the-notebooks)
   - [Run on Colab](#run-on-colab)
@@ -60,8 +60,8 @@ This project implements an **agentic CRAG** workflow:
 
 - Retrieve relevant chunks from a **local vector database**
 - Grade retrieved evidence
-- If evidence is good → answer
-- If evidence is weak → rewrite query and/or use **web search** → answer
+- If evidence is good ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ answer
+- If evidence is weak ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ rewrite query and/or use **web search** ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ answer
 
 The goal is to reduce hallucinations and improve answer grounding.
 
@@ -73,7 +73,7 @@ The goal is to reduce hallucinations and improve answer grounding.
 graph TD
     %% Nodes
     Start([User Input])
-    Retrieve[retrieve: Local Vector DB]
+    Retrieve[retrieve_documents: Local vector store]
     Grade[grade_documents: Hybrid Grader]
     Decide{decide_to_generate}
     Rewrite[rewrite_query: LLM Optimizer]
@@ -125,10 +125,10 @@ The system defaults are optimized for speed and accuracy in Vietnamese:
 
 ## Installation
 
-### Option A — Colab (Recommended)
+### Option A ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Colab (Recommended)
 No local setup needed. Use one of the Colab notebooks above.
 
-### Option B — Local (Jupyter / Python)
+### Option B ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Local (Jupyter / Python)
 Install dependencies (minimum set used in notebooks):
 
 ```bash
@@ -154,7 +154,7 @@ The notebooks expect:
 
 ### Example (as used in the notebooks)
 - Domain docs (`.docx`): internal medicine / pediatrics / ENT (YHCT) documents
-- Evaluation JSON: a QA file (e.g., “bệnh ngũ quan.json”)
+- Evaluation JSON: a QA file (e.g., ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œbÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡nh ngÃƒâ€¦Ã‚Â© quan.jsonÃƒÂ¢Ã¢â€šÂ¬Ã‚Â)
 
 **On Colab**
 - Mount Google Drive:
@@ -163,8 +163,49 @@ The notebooks expect:
 - Update file paths to your Drive location.
 
 **On Local**
-- Put files under a folder like `data/`
+- Put built-in files under `Data/`
 - Update paths in the notebook cells accordingly.
+
+
+---
+
+## Project Structure
+
+```text
+Agentic-CRAG/
+|-- app.py                    # Thin Gradio launcher; run with python app.py
+|-- main.py                   # CLI/demo entrypoint
+|-- pyproject.toml            # Python package metadata
+|-- modules/
+|   |-- settings.py           # Environment, paths, retrieval parameters
+|   |-- models.py             # Embedding and API LLM loaders
+|   |-- ingestion/
+|   |   |-- loaders.py        # .docx/.txt/.md loading and text cleanup
+|   |   |-- sources.py        # Built-in/uploaded source inventory and soft-delete
+|   |   `-- splitters.py      # Book-specific and generic chunking
+|   |-- retrieval/
+|   |   |-- retriever.py      # In-memory hybrid retriever and source diversification
+|   |   `-- vector_store.py   # Chroma/in-memory vector store factory
+|   |-- rag/
+|   |   |-- chains.py         # Grader, rewriter, generator chains
+|   |   |-- graph.py          # LangGraph CRAG workflow
+|   |   |-- service.py        # Application service layer for graph/index operations
+|   |   `-- ingestion.py      # Backward-compatible facade
+|   |-- ui/
+|   |   |-- formatting.py     # Answer/source formatting and citations
+|   |   |-- handlers.py       # Chat, upload, delete, rebuild handlers
+|   |   `-- gradio_app.py     # Gradio layout and launch
+|   |-- components.py         # Backward-compatible wrapper for modules.rag.chains
+|   |-- graph.py              # Backward-compatible wrapper for modules.rag.graph
+|   `-- ingestion.py          # Backward-compatible wrapper for modules.rag.ingestion
+|-- Data/                     # Built-in source documents
+|-- user_sources/             # User-uploaded source documents
+|-- database/                 # Chroma/vector database directory
+|-- config.py                 # Backward-compatible wrapper for modules.settings
+`-- utils.py                  # Backward-compatible wrapper for modules.models
+```
+
+The canonical implementation now lives under `modules/`. Root-level `app.py`, `config.py`, and `utils.py` remain as compatibility entrypoints/wrappers so older commands keep working.
 
 ---
 
@@ -175,7 +216,7 @@ The notebooks expect:
 3. Run the notebook top-to-bottom:
    - Install libs
    - Load + chunk documents
-   - Build/load the Chroma vector DB
+   - Build/load the configured vector store
    - Run a demo query
    - (Optional) Run evaluation
 
@@ -189,7 +230,7 @@ The notebooks expect:
    ```bash
    python app.py
    ```
-4. Open the local URL (usually `http://127.0.0.1:7860`) in your browser.
+4. Open the local URL (usually `http://127.0.0.1:7860`; if that port is busy, Gradio will choose the next available port) in your browser.
 
 **Recent Optimizations:**
 - **Anti-Hallucination:** Stricter LLM prompts ensure the model strictly follows the context and does not invent medical facts.
