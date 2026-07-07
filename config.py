@@ -75,7 +75,7 @@ LLM_API_PROVIDERS = {
 
 # --- PATHS ---
 DATA_DIR = BASE_DIR / "Data"
-CHROMA_DB_DIR = os.getenv("CHROMA_DB_DIR", str(BASE_DIR / "YHCT"))
+CHROMA_DB_DIR = os.getenv("CHROMA_DB_DIR", str(BASE_DIR / "database"))
 USER_SOURCES_DIR = Path(os.getenv("USER_SOURCES_DIR", str(BASE_DIR / "user_sources")))
 
 FILES = {

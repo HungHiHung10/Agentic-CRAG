@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.py[cod]
+database/
+eval_results.xlsx
+crag_predictions.txt
+user_sources/
