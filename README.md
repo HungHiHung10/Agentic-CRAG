@@ -75,15 +75,16 @@ graph TD
 
 ## Models & Tools
 
-The default notebooks use:
+The system defaults are optimized for speed and accuracy in Vietnamese:
 
-- **Embedding model:** `BAAI/bge-m3`
-- **Reranker:** `BAAI/bge-reranker-base`
-- **LLM (generation / judge):** `Qwen/Qwen2.5-7B-Instruct`
-- **Vector store:** ChromaDB
-- **Web search:** DuckDuckGo (via `duckduckgo-search` / `ddgs`)
+- **Embedding model:** `keepitreal/vietnamese-sbert` (Lightweight, CPU-friendly, optimized for Vietnamese semantic search).
+- **LLM (Generation / Judge):** Configurable API chain prioritizing **Groq (Llama-3.1-8b-instant)** for ultra-fast generation, falling back to Cerebras, Mistral, and OpenRouter.
+- **Retrieval Logic:** Hybrid search combining semantic embeddings with strict **N-gram Lexical Search** to accurately retrieve YHCT medical terms.
+- **Reranker:** Disabled by default for speed, but supports `BAAI/bge-reranker-base`.
+- **Vector store:** In-memory store (or ChromaDB).
+- **Web search:** DuckDuckGo (via `duckduckgo-search` / `ddgs`).
 
-> You can swap models by editing the corresponding cells/config inside the notebook.
+> You can swap models by editing the `.env` file or `config.py`.
 
 ---
 
@@ -145,15 +146,20 @@ The notebooks expect:
 
 ---
 
-## Run Locally
+## Run Locally (Gradio App)
 
 1. Install dependencies (see [Installation](#installation))
-2. Open the notebook with Jupyter / VSCode:
-   - Run all cells sequentially
-3. Ensure:
-   - Document paths are correct
-   - Chroma persistence directory is writable (if enabled)
-   - Optional: run on GPU for faster inference
+2. Copy the `.env.example` (if exists) or configure your API keys in a `.env` file (e.g., `GROQ_API_KEY`).
+3. Run the Gradio application:
+   ```bash
+   python app.py
+   ```
+4. Open the local URL (usually `http://127.0.0.1:7860`) in your browser.
+
+**Recent Optimizations:**
+- **Anti-Hallucination:** Stricter LLM prompts ensure the model strictly follows the context and does not invent medical facts.
+- **Parallel Processing:** Document grading uses `.batch()` to process chunks concurrently, significantly reducing API wait times.
+- **Stable UI:** Fixed Gradio responsive breakpoint loops for a stutter-free experience.
 
 ---
 

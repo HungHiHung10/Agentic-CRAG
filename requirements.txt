@@ -3,8 +3,10 @@ langchain
 langchain-community
 langchain-core
 langchain-huggingface
+langchain-openai
 langchain-chroma
 langgraph
+gradio
 ddgs
 duckduckgo-search
 
