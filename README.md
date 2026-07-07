@@ -1,5 +1,14 @@
 # Agentic Corrective RAG System with LangGraph
 
+<p align="left">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=flat&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/LangChain-%F0%9F%A6%9C%F0%9F%94%97-green?style=flat" alt="LangChain"/>
+  <img src="https://img.shields.io/badge/LangGraph-%E2%9A%99%EF%B8%8F-blueviolet?style=flat" alt="LangGraph"/>
+  <img src="https://img.shields.io/badge/Gradio-UI-orange?style=flat" alt="Gradio"/>
+  <img src="https://img.shields.io/badge/ChromaDB-Vector_Store-red?style=flat" alt="ChromaDB"/>
+  <img src="https://img.shields.io/badge/Groq-Fast_Inference-black?style=flat" alt="Groq"/>
+</p>
+
 An **Agentic Corrective Retrieval-Augmented Generation (CRAG)** pipeline built with **LangGraph** for domain QA over Vietnamese documents (e.g., YHCT).  
 The system can **self-check retrieved context** and **fallback to query rewrite + web search** when local evidence is insufficient.
 
