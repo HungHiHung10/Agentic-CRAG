@@ -16,7 +16,7 @@ The system can **self-check retrieved context** and **fallback to query rewrite 
 
 ## Open in Colab (Quickstart)
 
-> Open a notebook and run **Runtime ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Run all**.
+> Open a notebook and run **Runtime → Run all**.
 
 <p align="left">
   <a href="https://colab.research.google.com/drive/1-Hh52dIAnHE3QWzUYlKtvuf7IR0zksHY?usp=sharing">
@@ -41,8 +41,8 @@ The system can **self-check retrieved context** and **fallback to query rewrite 
   - [System Pipeline](#system-pipeline)
   - [Models \& Tools](#models--tools)
   - [Installation](#installation)
-    - [Option A ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Colab (Recommended)](#option-a--colab-recommended)
-    - [Option B ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Local (Jupyter / Python)](#option-b--local-jupyter--python)
+    - [Option A — Colab (Recommended)](#option-a--colab-recommended)
+    - [Option B — Local (Jupyter / Python)](#option-b--local-jupyter--python)
   - [Data Setup](#data-setup)
     - [Example (as used in the notebooks)](#example-as-used-in-the-notebooks)
   - [Run on Colab](#run-on-colab)
@@ -60,8 +60,8 @@ This project implements an **agentic CRAG** workflow:
 
 - Retrieve relevant chunks from a **local vector database**
 - Grade retrieved evidence
-- If evidence is good ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ answer
-- If evidence is weak ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ rewrite query and/or use **web search** ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ answer
+- If evidence is good → answer
+- If evidence is weak → rewrite query and/or use **web search** → answer
 
 The goal is to reduce hallucinations and improve answer grounding.
 
@@ -125,10 +125,10 @@ The system defaults are optimized for speed and accuracy in Vietnamese:
 
 ## Installation
 
-### Option A ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Colab (Recommended)
+### Option A — Colab (Recommended)
 No local setup needed. Use one of the Colab notebooks above.
 
-### Option B ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Local (Jupyter / Python)
+### Option B — Local (Jupyter / Python)
 Install dependencies (minimum set used in notebooks):
 
 ```bash
@@ -154,7 +154,7 @@ The notebooks expect:
 
 ### Example (as used in the notebooks)
 - Domain docs (`.docx`): internal medicine / pediatrics / ENT (YHCT) documents
-- Evaluation JSON: a QA file (e.g., ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œbÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡nh ngÃƒâ€¦Ã‚Â© quan.jsonÃƒÂ¢Ã¢â€šÂ¬Ã‚Â)
+- Evaluation JSON: a QA file (e.g., “bệnh ngũ quan.json”)
 
 **On Colab**
 - Mount Google Drive:
